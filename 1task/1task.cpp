@@ -1,7 +1,6 @@
 ﻿#include <iostream>
 #include <initializer_list>
 #include <vector>
-#include <algorithm>
 using namespace std;
 
 /*Розв'язати завдання 1.2 першої лабораторної роботи з використанням вектора векторів Стандартної бібліотеки.
@@ -36,15 +35,24 @@ public:
 			arr[i].resize(colz);
 		}
 	}
-
 	Array(initializer_list<vector<T>> list)
 	{
 		arr.resize(list.size());
 		arr = list;
 	}
+	Array(initializer_list<initializer_list<T>> list)
+	{
+		arr.resize(list.size());
+		int counter = 0;
+		for (auto& i : list)
+		{
+			arr[counter] = i;
+			counter++;
+		}
+	}
 
 	T& operator()(int row, int col) { return arr.at(row).at(col); }
-	T operator()(int row, int col) const { return arr.at(row).at(col); }
+	T operator()(int row, int col) const { return arr.at(row).at(col); } // Отдельный оператор для перегрузки вывода (перегрузка const)
 
 	vector<vector<T>>& GetVector() { return arr; }
 
@@ -150,18 +158,20 @@ void Change(Array<T>& a)
 int main()
 {
 	setlocale(LC_ALL, "ru");
-	Array<int> a = { vector<int>({ 1, 2 }), vector<int>({ 3, 4 }), vector<int>{ 1, 2 } };
-	Array<int> b = { vector<int>({ 1, 2 }), vector<int>({ 3, 4 }), vector<int>{ 1, 2 } };
+	Array<int> a = { { 5, 1 }, { 7, 2 }, { 9, 3 } };
+	Array<int> b = { vector<int>{ 1, 2 }, vector<int>{ 3, 4 }, vector<int>{ 1, 2 } };
 	Array<double> c(3, 2, 2);
 	Array<double> f(2, 3, 2);
 	try
 	{
 		cout << c * f << endl;
+		cout << a - b << endl;
+		//cout << c(2, 4) << endl;
 		cout << c - f << endl;
 	}
 	catch (const char* str)
 	{
-		cout << str;
+		cout << str << endl;
 	}
 	catch (std::exception& a)
 	{

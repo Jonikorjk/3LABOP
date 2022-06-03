@@ -1,25 +1,8 @@
 ﻿#include <string>
 #include <vector>
 #include <iostream>
-#include <algorithm>
+#include <queue>
 using namespace std;
-
-// опис завдання
-
-/*Створити клас для представлення даних про студента. Клас повинен містити такі елементи даних:
-
-номер студентського посвідчення (unsigned int);
-прізвище (рядок типу std::string);
-оцінки за останню сесію у вигляді послідовності цілих від 0 до 100 (оцінка за предметом, std::vector).
-Всередині класу реалізувати функції доступу, а також об'явити конструктор, який ініціалізує елементи даних, та функції, які здійснюють:
-
-обчислення показника, за величиною якого здійснюється сортування відповідно до індивідуального завдання;
-перевірку умови, яка використовується для пошуку даних відповідно до індивідуального завдання.
-Здійснити опис класу для представлення групи студентів. В об'єкті такого класу повинні зберігатись дані про студентів у вигляді вектора об'єктів класу, який представляє студента. Клас повинен містити перевантажені операції введення-виведення, а також функції-елементи, які здійснюють
-
-сортування масиву за ознакою, яка наведена в індивідуальному завданні (з використанням алгоритму sort());
-пошук даних про студентів, які відповідають умові, наведеній в індивідуальному завданні (з використанням алгоритму for_each()).
-Розмістити об'єкти класу "Студент" в черзі з пріоритетом, з якої вилучати об'єкти в порядку зменшення середнього балу.*/
 
 
 class Student
@@ -35,6 +18,7 @@ public:
 
 	string getSecondName() const { return secondName; }
 	size_t getId() const { return id; }
+	vector<int> getGrades() const { return grades; }
 
 	double getRaiting() const
 	{
@@ -43,7 +27,7 @@ public:
 		{
 			finalGrade += i;
 		}
-		if(grades.size() == 0) throw "Нет оценок для получения рейтинга";
+		if (grades.size() == 0) throw "Нет оценок для получения рейтинга";
 		return (finalGrade / grades.size());
 	}
 
@@ -62,7 +46,14 @@ public:
 		}
 		return out;
 	}
+	friend ostream& operator<<(ostream& out, const Student& st)
+	{
+		out << "Фамилия: " << st.getSecondName() << "\tСтуденченский: " << st.getId()
+			<< "\tРейтинговый бал: " << st.getRaiting() << endl;
+		return out;
+	}
 };
+
 
 class Group
 {
@@ -74,17 +65,20 @@ public:
 	{
 		students = list;
 	}
-	Group(vector<Student> temp) : students(temp) {}
+	Group(vector<Student> temp) : students(temp) {} 
 
 	vector<Student> SortAscAndFilteredByB()
 	{
 		sortList();
 		return FilterByB();
 	}
-
+	vector<Student> getFilteredByBstudents() 
+	{
+		return FilterByB();
+	}
 	void sortList()
 	{
-		sort(students.begin(), students.end(), [](const Student& a, const Student& b)
+		sort(students.begin(), students.end(), [](const Student& a, const Student& b) -> bool
 		{
 			return a.getSecondName().length() < b.getSecondName().length();
 		});
@@ -99,6 +93,9 @@ public:
 		}
 		return out;
 	}
+	Student operator[](int i)  { return students.at(i); }
+	int size() { return students.size(); }
+
 private:
 	vector<Student> FilterByB()
 	{
@@ -111,28 +108,51 @@ private:
 	}
 };
 
+class Less
+{
+public:
+	bool operator()(const Student& a, const Student& b) const
+	{
+		return a.getRaiting() < b.getRaiting();
+	}
+};
+
 int main()
 {
 	setlocale(LC_ALL, "ru");
 	Group KH221A
 	{
-		{ Student("rg", 12345, vector<int>{87, 87, 87, 87, 87})},
-		{ Student("Дружочек",	12345, vector<int>{83, 83, 83, 83, 83})},
-		{ Student("j",	12345, vector<int>{89, 89, 89, 89, 89})},
-		{ Student("ebhfqwekgkq",		12345, vector<int>{82, 82, 82, 82, 82})},
-		{ Student("ewf",	12345, vector<int>{85, 85, 85, 85, 85})},
-		{ Student("Scefgtwetwpin",		12345, vector<int>{82, 82, 82, 82, 82})},
-		{ Student("123f",		12345, vector<int>{30, 82, 82, 82, 82})}
+		{ Student("Kovalenko", 32345,  vector<int>{70, 21, 5, 24, 7})},
+		{ Student("Krid4enko",	52345, vector<int>{83, 83, 83, 83, 83})},
+		{ Student("Antonov",	72445, vector<int>{89, 89, 89, 89, 89})},
+		{ Student("Golovko",		17745, vector<int>{82, 82, 82, 82, 82})},
+		{ Student("Yaroshenko",	18375,  vector<int>{85, 85, 85, 85})},
+		{ Student("Semeshin",		92375, vector<int>{82, 82, 82, 82, 85})},
+		{ Student("Gryshevsiy",		46215, vector<int>{30, 82, 82, 82, 82})},
+		{ Student("Kovalenkof",		46215, vector<int>{99, 99, 99, 99, 99})}
 	};
-	Group KH220(KH221A.SortAscAndFilteredByB());
+
+	cout << KH221A << endl;
+	priority_queue <Student, vector<Student>, Less> q;
 	try
 	{
-		cout << KH221A << endl;
-		KH221A.sortList();
-		cout << KH221A << endl;
-		cout << KH221A.SortAscAndFilteredByB() << endl;
+		//KH221A.sortList();
+		for (size_t i = 0; i < KH221A.size(); i++)
+		{
+			q.push(KH221A[i]); 
+		}
+		while (q.size())
+		{
+			cout << q.top();
+			q.pop();
+		}
+		//Group KH220(KH221A.SortAscAndFilteredByB());
+		//cout << KH220 << endl;
+		//KH221A.sortList();
+		//cout << KH221A << endl;
+		//cout << KH221A.SortAscAndFilteredByB() << endl;
 	}
-	catch (string a)
+	catch (const char* a)
 	{
 		cout << a << endl;
 	}
